@@ -18,9 +18,9 @@ class ModelPipeline:
         checkpoint = Checkpoint.from_directory(checkpoint_path)
         try:
             model = XGBoostTrainer.get_model(checkpoint)
-        except:
+        except Exception:  # noqa: BLE001
             msg = "No checkpoint retrieved. Was your model trained?"
-            raise ValueError(msg)
+            raise ValueError(msg)  # noqa: B904
 
         df = pl.DataFrame([flight.model_dump()])
         df = self._preprocess(df)

@@ -37,14 +37,14 @@ class DatabaseConnector:
         with engine.connect() as conn:
             try:
                 conn.execute(flights_table.insert(), data)
-            except Exception:
+            except Exception:  # noqa: BLE001
                 conn.rollback()
             else:
                 conn.commit()
 
         session.close()
 
-    def get_data(self) -> list[dict[Any, Any]]:
+    def get_data(self) -> list[tuple[Any, ...]]:
         engine = create_engine(self.engine_url, echo=True)
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -52,4 +52,4 @@ class DatabaseConnector:
         metadata = MetaData()
         flights_table = Table(self.table_name, metadata, autoload_with=engine)
 
-        return session.execute(flights_table.select()).fetchall()
+        return session.execute(flights_table.select()).fetchall()  # type: ignore

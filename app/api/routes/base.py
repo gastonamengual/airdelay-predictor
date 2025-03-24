@@ -27,6 +27,6 @@ async def train() -> Result:
 async def predict(
     flight: Flight,
 ) -> PredictionResult:
-    checkpoint_path = f"{Path.cwd()}/app/model_data/app/model_data/XGBoostTrainer_2025-03-24_17-01-53/XGBoostTrainer_4d9b0_00000_0_2025-03-24_17-01-53/checkpoint_000001"
+    checkpoint_path = f"{Path.cwd()}/app/model_data/app/model_data/XGBoostTrainer_2025-03-24_17-01-53/XGBoostTrainer_4d9b0_00000_0_2025-03-24_17-01-53/checkpoint_000001"  # noqa: E501
     pipeline = ModelPipeline()
     return pipeline.predict(flight, checkpoint_path)

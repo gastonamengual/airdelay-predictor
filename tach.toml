@@ -6,7 +6,6 @@ exclude = [
 source_roots = [
     ".",
 ]
-use_regex_matching = false
 
 [[modules]]
 path = "<root>"
