@@ -6,16 +6,17 @@ import ray
 import xgboost
 from ray.data import Dataset
 from ray.data.preprocessors import StandardScaler
-from ray.train import Checkpoint, CheckpointConfig, Result, RunConfig, ScalingConfig
+from ray.train import Checkpoint, CheckpointConfig, RunConfig, ScalingConfig
 from ray.train.xgboost import XGBoostTrainer
 
-from app.model import Flight, PredictionResult
+from app.model import Flight, PredictionResult, TrainingOutput
+from app.settings import settings
 
 
 @dataclass
 class ModelPipeline:
-    def predict(self, flight: Flight, checkpoint_path: str) -> PredictionResult:
-        checkpoint = Checkpoint.from_directory(checkpoint_path)
+    def predict(self, flight: Flight) -> PredictionResult:
+        checkpoint = Checkpoint.from_directory(settings.model_path)
         try:
             model = XGBoostTrainer.get_model(checkpoint)
         except Exception:  # noqa: BLE001
@@ -71,8 +72,8 @@ class ModelPipeline:
         valid_dataset = preprocessor.transform(valid_dataset)
         return train_dataset, valid_dataset, test_dataset
 
-    def train(self, result: list[tuple[Any, ...]]) -> Result:
-        df = pl.DataFrame(result)
+    def train(self, data: list[tuple[Any, ...]]) -> TrainingOutput:
+        df = pl.DataFrame(data)
         preprocessed_df = self._preprocess(df)
         train_dataset, valid_dataset, _test_dataset = self._split(preprocessed_df)
 
@@ -97,4 +98,9 @@ class ModelPipeline:
             ),
         )
 
-        return trainer.fit()
+        result = trainer.fit()
+        return TrainingOutput(
+            train_error=float(result.metrics["train-error"]),
+            valid_error=float(result.metrics["valid-error"]),
+            checkpoint_path=result.checkpoint.path,
+        )
