@@ -1,55 +1,63 @@
-from dataclasses import dataclass
+from collections.abc import Generator
+from contextlib import contextmanager
+from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Engine, Integer, String, create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
+
+from app.model import Flight
+
+Base = declarative_base()
+
+
+class FlightsTable(Base):  # type: ignore
+    __tablename__ = "flights"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    airline = Column(String)
+    flight_number = Column(Integer)
+    origin = Column(String)
+    destination = Column(String)
+    departure_time = Column(String)
+    weather = Column(String)
+    congestion_level = Column(String)
+    day_of_week = Column(String)
+    delay = Column(Integer)
 
 
 @dataclass
 class DatabaseConnector:
     engine_url: str = "sqlite:///flights.db"
     table_name: str = "flights"
+    engine: Engine = field(init=False)
 
-    def save_data(self, data: list[dict[Any, Any]]) -> None:
-        engine = create_engine(self.engine_url)
+    def __post_init__(self) -> None:
+        self.engine = create_engine(self.engine_url)
 
-        Session = sessionmaker(bind=engine)
-        session = Session()
+    @contextmanager
+    def session(self) -> Generator[Session]:
+        SessionLocal = sessionmaker(bind=self.engine)
+        session = SessionLocal()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
-        metadata = MetaData()
+    def create_table(self) -> None:
+        Base.metadata.create_all(self.engine)
 
-        flights_table = Table(
-            self.table_name,
-            metadata,
-            Column("airline", String),
-            Column("flight_number", Integer),
-            Column("origin", String),
-            Column("destination", String),
-            Column("departure_time", String),
-            Column("weather", String),
-            Column("congestion_level", String),
-            Column("day_of_week", String),
-            Column("delay", Integer),
-        )
+    def save(self, data: list[dict[Any, Any]]) -> None:
+        with self.session() as session:
+            session.bulk_insert_mappings(FlightsTable, data)
 
-        metadata.create_all(engine)
-
-        with engine.connect() as conn:
-            try:
-                conn.execute(flights_table.insert(), data)
-            except Exception:  # noqa: BLE001
-                conn.rollback()
-            else:
-                conn.commit()
-
-        session.close()
-
-    def get_data(self) -> list[tuple[Any, ...]]:
-        engine = create_engine(self.engine_url, echo=True)
-        Session = sessionmaker(bind=engine)
-        session = Session()
-
-        metadata = MetaData()
-        flights_table = Table(self.table_name, metadata, autoload_with=engine)
-
-        return session.execute(flights_table.select()).fetchall()  # type: ignore
+    def load(self) -> list[Flight]:
+        with self.session() as session:
+            return [
+                Flight.model_validate(flight.__dict__)
+                for flight in session.query(FlightsTable).all()
+            ]
