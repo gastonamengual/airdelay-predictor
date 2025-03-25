@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from app.database.database_connector import DatabaseConnector
-from app.model import Flight, PredictionResult
-from app.model.training_output import TrainingOutput
+from app.model import Flight, PredictionResult, TrainingOutput
 from app.pipeline import ModelPipeline, PreprocessingPipeline
 
 router = APIRouter()

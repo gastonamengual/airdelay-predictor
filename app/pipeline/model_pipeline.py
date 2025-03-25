@@ -9,6 +9,8 @@ from ray.train.xgboost import XGBoostTrainer
 from app.model import PredictionResult, TrainingOutput
 from app.settings import Settings
 
+from .error import NoCheckpointRetrieved
+
 
 @dataclass
 class ModelPipeline:
@@ -17,8 +19,7 @@ class ModelPipeline:
         try:
             model = XGBoostTrainer.get_model(checkpoint)
         except Exception:  # noqa: BLE001
-            msg = "No checkpoint retrieved. Was your model trained?"
-            raise ValueError(msg)  # noqa: B904
+            raise NoCheckpointRetrieved  # noqa: B904
 
         dmatrix = xgboost.DMatrix(df)
         prediction = model.predict(dmatrix)

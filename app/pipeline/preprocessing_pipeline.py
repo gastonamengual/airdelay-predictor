@@ -37,6 +37,7 @@ class PreprocessingPipeline:
             df[col].cast(pl.Categorical(ordering="lexical"))
             for col in categorical_columns
         ])
+        df = df.select([col for col in df.columns if df[col].is_null().sum() < len(df)])
         return df.with_columns(df.select(pl.all().to_physical()))
 
     def split(self, df: pl.DataFrame) -> tuple[Dataset, Dataset, Dataset]:
@@ -44,7 +45,14 @@ class PreprocessingPipeline:
         train_dataset, valid_dataset = dataset.train_test_split(test_size=0.3)
         test_dataset = valid_dataset.drop_columns(["delay"])
 
-        columns_to_scale = ["hour", "minute", "weekday", "month", "year"]
+        columns_to_scale = [
+            "flight_number",
+            "hour",
+            "minute",
+            "weekday",
+            "month",
+            "year",
+        ]
 
         preprocessor = StandardScaler(columns=columns_to_scale)
         preprocessor.fit(train_dataset)

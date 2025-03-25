@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,7 +13,9 @@ class Settings_(BaseSettings):
         extra="ignore",
     )
 
-    MODEL_PATH: str = f"{Path.cwd()}/app/model_data/app/model_data/XGBoostTrainer_2025-03-24_17-01-53/XGBoostTrainer_4d9b0_00000_0_2025-03-24_17-01-53/checkpoint_000001"  # noqa: E501
+    MODEL_PATH: str = Field(
+        default=f"{Path.cwd()}/app/model_data/XGBoostTrainer_2025-03-25_17-05-11/XGBoostTrainer_ee701_00000_0_2025-03-25_17-05-11/checkpoint_000001"
+    )  # noqa: E501)
 
 
 Settings = Settings_()
