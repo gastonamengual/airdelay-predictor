@@ -24,11 +24,6 @@ repos:
         #   hooks:
         #     - id: bandit
 
--   repo: https://github.com/gauge-sh/tach-pre-commit
-    rev: v0.28.3
-    hooks:
-    -   id: tach
-
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.11.2"
     hooks:
