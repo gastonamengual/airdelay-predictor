@@ -18,3 +18,36 @@ Technologies Used
 * Polars for fast data processing.
 * Ray for distributed computation and model checkpointing.
 * XGBoost for building the machine learning model.
+
+## Next Steps
+
+* The project is ready for deployment on VERCEL, but it cannot be deployed using the free tier (250MB) as the project size is approximately 800MB.
+* Experiment tracking with MLFlow to store different model versions and allow users to select them.
+* Automated CI/CD pipeline to GitHub Pages for building and deployment.
+* 100% test coverage.
+
+## Installation
+
+1.	Clone this repository:
+
+```bash
+git clone https://github.com/gastonamengual/airdelay-predictor
+cd <repository-directory>
+```
+
+2.	Create a virtual environment and install dependencies:
+
+```bash
+pipenv install --dev
+pipenv shell
+```
+
+3. Running the API
+
+Start the FastAPI server:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The server will be accessible at http://localhost:8080
