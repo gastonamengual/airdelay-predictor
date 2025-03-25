@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Depends
 
 from app.database.database_connector import DatabaseConnector
-from app.model import Flight, PredictionResult
-from app.model.training_output import TrainingOutput
+from app.model import Flight, PredictionResult, TrainingOutput
 from app.pipeline import ModelPipeline, PreprocessingPipeline
 
-router = APIRouter()
+router = APIRouter(prefix="/model", tags=["Model"])
 
 
-@router.post("/model/train")
+@router.post("/train")
 async def train(
     model_pipeline: ModelPipeline = Depends(ModelPipeline),
     preprocessing_pipeline: PreprocessingPipeline = Depends(PreprocessingPipeline),
@@ -19,7 +18,7 @@ async def train(
     return model_pipeline.train(train_dataset, valid_dataset)
 
 
-@router.post("/model/predict")
+@router.post("/predict")
 async def predict(
     flight: Flight,
     model_pipeline: ModelPipeline = Depends(ModelPipeline),
