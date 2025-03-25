@@ -4,21 +4,17 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
-uvicorn = "*"
-pydantic = "*"
-sqlalchemy = "*"
-asyncpg = "*"
-polars = "*"
-joblib = "*"
-requests = "*"
-httpx = "*"
-xgboost = "*"
-scikit-learn = "*"
-pandas = "*"
-pyarrow = "*"
-lightgbm = "*"
-ray = {extras = ["data", "train"], version = "*"}
+fastapi = "0.115.12"
+uvicorn = "==0.34.0"
+pydantic = "==2.10.6"
+sqlalchemy = "==2.0.39"
+polars = "==1.26.0"
+httpx = "==0.28.1"
+xgboost = "==3.0.0"
+scikit-learn = "==1.6.1"
+pandas = "==2.2.3"
+ray = {extras = ["data", "train"], version = "==2.44.0"}
+pydantic-settings = "==2.8.1"
 
 [dev-packages]
 pytest = "==8.3.4"
@@ -26,7 +22,7 @@ pytest-cov = "==6.0.0"
 flake8 = "==7.1.2"
 black = "==25.1.0"
 pre-commit = "==4.1.0"
-ipykernel = "*"
+ipykernel = "==6.29.5"
 
 [requires]
 python_version = "3.12.9"

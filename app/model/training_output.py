@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class TrainingOutput:
+class TrainingOutput(BaseModel):
     train_error: float
     valid_error: float
     checkpoint_path: str
