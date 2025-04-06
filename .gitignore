@@ -163,3 +163,6 @@ s
 pytest-report.xml
 images/.DS_Store
 images/.DS_Store
+
+ray/
+ray_data/

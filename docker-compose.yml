@@ -1,0 +1,74 @@
+services:
+  airline-predictor:
+    depends_on:
+      - ray-head
+      - ray-worker
+      - mlflow-server
+    build: .
+    environment:
+      - MODEL_TRACKING_URI=http://mlflow-server:5005
+    ports:
+      - "8080:8080"
+    networks:
+      - airline-network
+
+  ray-head:
+    image: rayproject/ray:latest
+    command: ray start --head
+    ports:
+      - "8265:8265"
+    environment:
+      - RAY_HEAD=true
+    networks:
+      - airline-network
+
+  ray-worker:
+    image: rayproject/ray:latest
+    command: ray start --address='ray-head:6379'
+    depends_on:
+      - ray-head
+    networks:
+      - airline-network
+
+  mlflow-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - MLFLOW_TRACKING_URI=postgresql://mlflow_user:mlflow_password@postgres:5432/mlflow_db
+    ports:
+      - "5005:5005"
+    volumes:
+      - mlflow-artifacts:/mlflow/artifacts
+    restart: always
+    networks:
+      - airline-network
+
+  postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=mlflow_user
+      - POSTGRES_PASSWORD=mlflow_password
+      - POSTGRES_DB=mlflow_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d mlflow_db -U mlflow_user"]
+      interval: 10s
+      retries: 5
+    ports:
+      - "5432:5432"
+    restart: always
+    networks:
+      - airline-network
+
+networks:
+  airline-network:
+    driver: bridge
+
+volumes:
+  mlflow-artifacts:
+  postgres-data:

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 import polars as pl
+
 import ray
+from app.model.flight import Flight
 from ray.data import Dataset
 from ray.data.preprocessors import StandardScaler
-
-from app.model.flight import Flight
 
 
 @dataclass

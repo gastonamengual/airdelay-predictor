@@ -6,8 +6,10 @@ name = "pypi"
 [packages]
 fastapi = "0.115.12"
 uvicorn = "==0.34.0"
+mlflow = "*"
 pydantic = "==2.10.6"
 sqlalchemy = "==2.0.39"
+psycopg2-binary = "*"
 polars = "==1.26.0"
 httpx = "==0.28.1"
 xgboost = "==3.0.0"
@@ -15,7 +17,6 @@ scikit-learn = "==1.6.1"
 pandas = "==2.2.3"
 ray = {extras = ["data", "train"], version = "==2.44.0"}
 pydantic-settings = "==2.8.1"
-pyjwt = "==2.10.1"
 
 [dev-packages]
 pytest = "==8.3.4"
@@ -30,8 +31,7 @@ freezegun = "==1.5.1"
 python_version = "3.12.9"
 
 [scripts]
+start = "python -m app"
 hook = "pre-commit install"
 format = "pre-commit run --all-files"
 test = "pytest ./tests -rA --doctest-modules --junitxml=pytest-report.xml --cov=. --cov-report=html --cov-report term-missing"
-build = "bash -c 'python setup.py clean --all && python setup.py bdist_wheel'"
-publish = "twine upload dist/*"
