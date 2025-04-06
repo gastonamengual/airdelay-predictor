@@ -3,33 +3,30 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy import Column, Engine, Integer, String, create_engine
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from pydantic import BaseModel
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.model import Flight
+from app.model_registry.config import ModelRegistryConfig
 
-Base = declarative_base()
+from .tables import AbstractTable, Base, FlightsTable, ModelsTable
 
+TABLE_NAME_TO_BASE: dict[str, AbstractTable] = {
+    "flights": FlightsTable,  # type: ignore
+    "models": ModelsTable,  # type: ignore
+}
 
-class FlightsTable(Base):  # type: ignore
-    __tablename__ = "flights"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    airline = Column(String)
-    flight_number = Column(Integer)
-    origin = Column(String)
-    destination = Column(String)
-    departure_time = Column(String)
-    weather = Column(String)
-    congestion_level = Column(String)
-    day_of_week = Column(String)
-    delay = Column(Integer)
+TABLE_NAME_TO_OBJECT: dict[str, BaseModel] = {
+    "flights": Flight,  # type: ignore
+    "models": ModelRegistryConfig,  # type: ignore
+}
 
 
 @dataclass
 class DatabaseConnector:
-    engine_url: str = "sqlite:///flights.db"
-    table_name: str = "flights"
+    engine_url: str
+    table_name: str
     engine: Engine = field(init=False)
 
     def __post_init__(self) -> None:
@@ -53,11 +50,23 @@ class DatabaseConnector:
 
     def save(self, data: list[dict[Any, Any]]) -> None:
         with self.session() as session:
-            session.bulk_insert_mappings(FlightsTable, data)
+            session.bulk_insert_mappings(TABLE_NAME_TO_BASE[self.table_name], data)
 
-    def load(self) -> list[Flight]:
+    def load(self) -> list[Any]:
         with self.session() as session:
             return [
-                Flight.model_validate(flight.__dict__)
-                for flight in session.query(FlightsTable).all()
+                TABLE_NAME_TO_OBJECT[self.table_name].model_validate(item.__dict__)
+                for item in session.query(TABLE_NAME_TO_BASE[self.table_name]).all()
             ]
+
+    def get_metadata_by_job_id(self, job_id: str) -> ModelRegistryConfig:
+        with self.session() as session:
+            metadata = (
+                session.query(ModelsTable).filter(ModelsTable.job_id == job_id).first()
+            )
+
+            if metadata is None:
+                msg = f"Metadata for job_id {job_id} not found."
+                raise ValueError(msg)
+
+            return ModelRegistryConfig.model_validate(metadata)
