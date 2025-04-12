@@ -1,6 +1,6 @@
 # Flight Delay Predictor
 
-This project is being developed as part of a job interview for an airline company. This project is an API designed to predict flight delays based on various input features. It includes two primary endpoints:
+This project is an API designed to predict flight delays based on various input features. It includes two primary endpoints:
 
 ## Train Endpoint
 
